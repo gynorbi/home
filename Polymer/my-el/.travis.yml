@@ -1,0 +1,24 @@
+language: node_js
+node_js: stable
+dist: trusty
+sudo: required
+addons:
+  firefox: latest
+  sauce_connect: true
+  apt:
+    sources:
+    - google-chrome
+    packages:
+    - google-chrome-stable
+  before_script:
+  - npm install -g bower web-component-tester
+  - export PATH=$PWD/node_modules/.bin:$PATH
+  - bower install
+  script:
+  - xvfb-run wct --skip-plugin sauce_connect
+  - if [ "${TRAVIS_PLULL_REQUEST}" = "false"]; then wct --skip-plugin local; fi
+env:
+  global:
+  - secure: 21k5zvvXKeHRnhQcmGcvTeMoe0JAo8hpYwwvUYnSMcHvcgo+ZkqigfGFG0Er1rKcc53KmGihkHYVF+2Apo3/qWJW4smMJT8KxwiXcjYEn7RpVu78lIvNmKI2HUrtKr3kYIs7de3o6XhIr6Jf35telzVZZ02KgHg02IxL44QMHNRLXf7e978mCNm2LlMsxzqunXcYxyuL60OZPu0k+svJ55KZcufhjZQ8v+cp7U1leYq4xZoXwxAsKdfwldZnjeLmYiT3v9P5cstgAuWjilkhjmXzrjYbYSvHh4Zk8f3AXkG/4XV2zUaRxHM2OEHAq/dkaV7Ia3CvuAuk/RDxSDrL/iS9BvMrdGhMJxUjR3siMKs8FxRh7TksbJv2HL5y6zgp7QwEakfniIATClG9PiGpxMwQynUsJI2SN1s2rW6tzWYEWRaH7y63BrJkBPdEZ7jVfx03FmXGr7Zx3wDp7moEK3MjUlZtI+igyjllEd0UkkNaohdLVHlpcgdrtVxjNeiWsaJ3kDD32A1VmexlRjWtfK2YPEBi2gpRtzxl0fo7fIXrqDz/YwRr7e5x8o9Zey9Mv0nbYCht5gIQf3DNrI4rQ0DYUMxx/nMaFmdzDqkwD+v+R6Ba8/kBKFUrj6Q+v8sf0q8YnXFRYA2SlQ4n25yRT3cevlHjC56kPg7f2eTs+MM=
+  - secure: 0P7Mk6dNVuWw9AoE8YZFE/vL3D1K1+TtJQI+ONAcyt6D2kG76TDi3sjk/hORN+SM1SFjTMxOS3DxJRBY1NbyyUS2c7f2xCJNzEwK4Ik5GJ+IQDjbDjLYhLUIC2fLXzV0F+AzovJsuCKhdNIMetxRAVGFORBIqoMOw2BpTjUa1lviS7xsvda5MPpr3v7nKFpNJeT3ePiimjLVdbVPVkGioUGRZnOt2Kg45SNJFSGp+ndDYB4VrhKvdgL0Wl7xEfs9+CC1Veb/bTaLWQPR1t+AZkMtfKjIXBoA3Y1WHppZMybtbKKaNb7CIz5tdcvMT47oAfb8Xl7u9kA2YmHoCSpQCsbgrCJZcuiEb/86PVHQhyw05twaRkKuFYr+Pm60jdpaFosVAV/papY4oB5QeEiqXi1b9lb9A2WOqbbJfcBcX6XnMkYoRn77SbhYXtDSa0jB88K4BKZpidICmDIuQrf9jJ07NuMq3W0gMlFi+vuHMrquH9Km/Bu99oZ42rpUzACMDwd/DilP2whnB3UM/l0G1JAcFtU/P33LS2oyijcqf+3NBtQx+gXYq1Ej/iXI8LmOZNlcz0WYYocnPfzRmEsljGVKDLpTlSOhQU18STuq8LhUVh2aGteB10UZATcMC6g0khQE6Qn4alyFsEGuEqE2JQPfToFQ3zNfdd9saXzoqEs=
+  - secure: J6ky6++hOE6CnI24cf+jrIyBT7BdjlPWs/tIY7ML/nlsvF82B193bs5mizmwTXuRrKX00BV2Xvr9uFpdElfAV0svHZ5zF/aEcG5nU4Tpmk3VuhSszWVlV5iJb6QjC15/UoYYpyQbRtinm68Q1digzBNZHi+JxvdE6kqlNct7ira8umlrr6iwHNnfU0KMc0L+/Cu9kzbU/RP1gRFwzem0A7vbkEbPkR7vn0KM2zjYbHGZ6lGasQzioc6UNDKbhaXcg7Pg9MQeNifG8XIciU5LzzdjBHUMpjkUVQtB43sbfOuGIGayhIWO3zX2mtcY+9zy0OrVEHHkpkwGoHDxaSc+4GBgSmMgSiZRNoZM0+Cp17EFvklFXqjYRdNBvfYtuniOw1IbskyrORy08FqgZYoneQS4jfvH2VGdEDLCnzWBT2t1a+7Y8rfdLgZA9URF2mosqW7SiU9gyz0OI6Smu4duTYgmkToNnBF6WoNW8Ia0q0BdB0d/Ne6hslCa32R/1I6o7U26xIFV1HhZtXhJYrIQZ0CsOooLYSR1bn+C4V1MLHvJyGwv56SPOrBQPOe8NFBLNqmEAdmGHTPNF2pz1RyTuSmx21HGv+cbThv7widtoaIZEYR1Z0mZ8sn2vGshWBa5azDAzajyEu59/95YT+6tg0f8V2WNa7/MNrQUBYmmhX8=
