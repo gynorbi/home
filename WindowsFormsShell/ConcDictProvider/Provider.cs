@@ -1,18 +1,19 @@
 ﻿using CommonThings;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EventBasedProvider
+namespace ConcDictProvider
 {
-    public class Provider:IProvider
+    public class Provider : IProvider
     {
         FileSystemWatcher fsw;
         string path = @"c:\temp\fsw";
-        IDictionary<string, List<FileData>> data;
+        ConcurrentDictionary<string, List<FileData>> data;
 
         public int Count { get { return data.Aggregate(0, (count, kvp) => count + kvp.Value.ToList().Count); } }
 
@@ -21,7 +22,7 @@ namespace EventBasedProvider
             fsw = new FileSystemWatcher(path);
             fsw.IncludeSubdirectories = true;
             fsw.EnableRaisingEvents = true;
-            data = new Dictionary<string, List<FileData>>();
+            data = new ConcurrentDictionary<string, List<FileData>>();
         }
 
         public async Task ReadAllFiles()
@@ -40,22 +41,14 @@ namespace EventBasedProvider
         private void ProcessResult(string name, string fullName, string content)
         {
             var newContent = fullName + "\r\n" + content;
-            if (data.ContainsKey(name))
-            {
-                var matchingFileData = data[name].FirstOrDefault(fd => fd.FullPath == fullName);
-                if (matchingFileData != null)
-                {
-                    matchingFileData.Content = newContent;
-                }
-                else
-                {
-                    data[name].Add(new FileData { FullPath = fullName, Content = newContent });
-                }
-            }
-            else
-            {
-                data.Add(name, new List<FileData>() { new FileData { FullPath = fullName, Content = newContent } });
-            }
+
+            data.AddOrUpdate(name, 
+                new List<FileData>() { new FileData { FullPath = fullName, Content = newContent } },
+                (key,existingList) => {
+                    var clonedList = existingList.ToList();
+                    clonedList.Add(new FileData { FullPath = fullName, Content = newContent });
+                    return clonedList;
+            });
         }
 
         public void Clear()

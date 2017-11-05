@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommonThings", "CommonThing
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventBasedProvider", "EventBasedProvider\EventBasedProvider.csproj", "{58D6C903-7C7B-43AE-ADAE-68CE4E8C12BB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConcDictProvider", "ConcDictProvider\ConcDictProvider.csproj", "{10CC9383-A039-4EE0-B11D-DAA112331146}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{58D6C903-7C7B-43AE-ADAE-68CE4E8C12BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{58D6C903-7C7B-43AE-ADAE-68CE4E8C12BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{58D6C903-7C7B-43AE-ADAE-68CE4E8C12BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{10CC9383-A039-4EE0-B11D-DAA112331146}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{10CC9383-A039-4EE0-B11D-DAA112331146}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{10CC9383-A039-4EE0-B11D-DAA112331146}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{10CC9383-A039-4EE0-B11D-DAA112331146}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
