@@ -13,16 +13,16 @@ namespace ConcDictProvider
     {
         FileSystemWatcher fsw;
         string path = @"c:\temp\fsw";
-        ConcurrentDictionary<string, List<FileData>> data;
+        ConcurrentDictionary<string, ConcurrentBag<FileData>> data;
 
-        public int Count { get { return data.Aggregate(0, (count, kvp) => count + kvp.Value.ToList().Count); } }
+        public int Count { get { return data.Aggregate(0, (count, kvp) => count + kvp.Value.ToList().Count()); } }
 
         public Provider()
         {
             fsw = new FileSystemWatcher(path);
             fsw.IncludeSubdirectories = true;
             fsw.EnableRaisingEvents = true;
-            data = new ConcurrentDictionary<string, List<FileData>>();
+            data = new ConcurrentDictionary<string, ConcurrentBag<FileData>>();
         }
 
         public async Task ReadAllFiles()
@@ -43,11 +43,19 @@ namespace ConcDictProvider
             var newContent = fullName + "\r\n" + content;
 
             data.AddOrUpdate(name, 
-                new List<FileData>() { new FileData { FullPath = fullName, Content = newContent } },
-                (key,existingList) => {
-                    var clonedList = existingList.ToList();
-                    clonedList.Add(new FileData { FullPath = fullName, Content = newContent });
-                    return clonedList;
+                new ConcurrentBag<FileData>() { new FileData { FullPath = fullName, Content = newContent } },
+                (key,existingBag) => {
+                    var clonedBag = new ConcurrentBag<FileData>(existingBag);
+                    var matchedElement = clonedBag.FirstOrDefault(fd => fd.FullPath == fullName);
+                    if (matchedElement != null)
+                    {
+                        matchedElement.Content = newContent;
+                    }
+                    else
+                    {
+                        clonedBag.Add(new FileData { FullPath = fullName, Content = newContent });
+                    }
+                    return clonedBag;
             });
         }
 
