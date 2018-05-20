@@ -1,0 +1,25 @@
+﻿@model MEFModules.Models.ModulesViewModel
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div>
+    <h4>Modules</h4>
+    <hr />
+    <dl class="dl-horizontal"></dl>
+
+    @if (Model.Modules.Count() > 0)
+    {
+
+        foreach (var module in Model.Modules)
+        {
+            <p>@module.Name</p>
+        }
+    }
+    else
+    {
+        <p>Nothing</p>
+
+    }
+</div>
