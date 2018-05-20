@@ -14,14 +14,13 @@ namespace WindowsFormsShell
     public partial class Form1 : Form
     {
         IProvider provider;
-        List<long> avg1, avg2, avg3, avg4;
+        List<List<long>> avgerages;
+        List<Task<long>> tasks;
         public Form1()
         {
             InitializeComponent();
-            avg1 = new List<long>();
-            avg2 = new List<long>();
-            avg3 = new List<long>();
-            avg4 = new List<long>();
+            avgerages = new List<List<long>>();
+            tasks = new List<Task<long>>();
 
             if (radioButton1.Enabled)
             {
@@ -31,61 +30,62 @@ namespace WindowsFormsShell
             {
                 provider = new ConcDictProvider.Provider();
             }
-            timer1.Interval = timer2.Interval = timer3.Interval = timer4.Interval = (int)numericUpDown1.Value;
-        }
-
-
-
-        private void timer1_Tick(object sender, EventArgs e)
-        {
-            OnTick(listBox1, textBox1, avg1, avgTextBox1);
-        }
-
-        private void timer2_Tick(object sender, EventArgs e)
-        {
-            OnTick(listBox2, textBox2, avg2, avgTextBox2);
-        }
-
-        private void timer3_Tick(object sender, EventArgs e)
-        {
-            OnTick(listBox3, textBox3, avg3, avgTextBox3);
-        }
-
-        private void timer4_Tick(object sender, EventArgs e)
-        {
-            OnTick(listBox4, textBox4, avg4, avgTextBox4);
-        }
-
-        private void OnTick(ListBox currentListBox, TextBox currentTextBox, List<long> avg, TextBox avgTextBox)
-        {
-            var t = Task.Run(() =>
+            for (int i = 0; i < numericUpDown1.Value; i++)
             {
-                int count = 0;
-                long countDuration = 0;
-                var message = string.Empty;
-                int threadId = System.Threading.Thread.CurrentThread.ManagedThreadId;
-                try
-                {
-                    countDuration = SwTimer.Time(() => count = provider.Count);
-                    return new { count, countDuration, message, threadId };
-                }
-                catch (Exception ex)
-                {
-                    message = $"Error: {ex.Message}, {ex.InnerException?.Message}";
-                    return new { count, countDuration, message, threadId };
-                }
-            }).Result;
-            if (t.message == string.Empty)
-            {
-                avg.Add(t.countDuration);
-                avgTextBox.Text = avg.Count > 0 ? ((double)avg.Sum() / avg.Count).ToString("0.0000") : "0";
-                currentTextBox.Text = $"{t.count} ({t.countDuration}ms) ThrdId: {t.threadId}";
+
+                tasks.Add(RunOneQuery());
             }
-            else
+        }
+
+        private Task<long> RunOneQuery()
+        {
+            return SwTimer.Time(
+                () => Task.Run(
+                    () => provider.Count
+                    )
+                );
+        }
+
+
+        private void OnTick()
+        {
+            Task.WhenAll(tasks).ContinueWith((durations) =>
             {
-                currentListBox.Items.Add(t.message);
-                currentListBox.SelectedIndex = currentListBox.Items.Count - 1;
-            }
+                var durationValues = durations.Result;
+                for (int i = 0; i < durationValues.Length; i++)
+                {
+                    avgerages[i].Add(durationValues[i]);
+                }
+            });
+
+            //var t = Task.Run(() =>
+            //{
+            //    int count = 0;
+            //    long countDuration = 0;
+            //    var message = string.Empty;
+            //    int threadId = System.Threading.Thread.CurrentThread.ManagedThreadId;
+            //    try
+            //    {
+            //        countDuration = SwTimer.Time(() => count = provider.Count);
+            //        return new { count, countDuration, message, threadId };
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        message = $"Error: {ex.Message}, {ex.InnerException?.Message}";
+            //        return new { count, countDuration, message, threadId };
+            //    }
+            //}).Result;
+            //if (t.message == string.Empty)
+            //{
+            //    avg.Add(t.countDuration);
+            //    avgTextBox.Text = avg.Count > 0 ? ((double)avg.Sum() / avg.Count).ToString("0.0000") : "0";
+            //    currentTextBox.Text = $"{t.count} ({t.countDuration}ms) ThrdId: {t.threadId}";
+            //}
+            //else
+            //{
+            //    currentListBox.Items.Add(t.message);
+            //    currentListBox.SelectedIndex = currentListBox.Items.Count - 1;
+            //}
         }
 
         private async void button1_Click(object sender, EventArgs e)
@@ -95,30 +95,34 @@ namespace WindowsFormsShell
                     () => provider.ReadAllFiles().Wait()
             ));
             var message = $"ReadAllFiles duration: {duration}ms";
-            listBox1.Items.Add(message);
-            listBox2.Items.Add(message);
-            listBox3.Items.Add(message);
-            listBox4.Items.Add(message);
         }
 
 
 
         private void numericUpDown1_ValueChanged(object sender, EventArgs e)
         {
-            timer1.Interval = timer2.Interval = timer3.Interval = timer4.Interval = (int)((NumericUpDown)sender).Value;
+            timer1.Enabled = false;
+            Task.WaitAll(tasks.ToArray());
+            if (tasks.Count < numericUpDown1.Value)
+            {
+
+
+                for (int i = 0; i < numericUpDown1.Value - tasks.Count; i++)
+                {
+                    tasks.Add(RunOneQuery());
+                }
+            }
+            else
+            {
+                tasks.RemoveRange(0, tasks.Count - (int)numericUpDown1.Value);
+            }
+            timer1.Enabled = true;
         }
+
 
         private void button2_Click(object sender, EventArgs e)
         {
             provider.Clear();
-            listBox1.Items.Clear();
-            listBox2.Items.Clear();
-            listBox3.Items.Clear();
-            listBox4.Items.Clear();
-            avg1.Clear();
-            avg2.Clear();
-            avg3.Clear();
-            avg4.Clear();
         }
 
         private void radioButton_CheckedChanged(object sender, EventArgs e)
@@ -131,6 +135,11 @@ namespace WindowsFormsShell
             {
                 provider = new ConcDictProvider.Provider();
             }
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            OnTick();
         }
     }
 }
